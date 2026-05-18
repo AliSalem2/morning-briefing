@@ -1,0 +1,7 @@
+config/.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+config/gc_client.json
+config/token.json
