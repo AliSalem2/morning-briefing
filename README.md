@@ -105,16 +105,27 @@ And make sure your `ANTHROPIC_API_KEY` is filled in. No other code changes neede
 
 morning-briefing/
 ├── servers/
+
 │   ├── weather_mcp.py      # Open-Meteo API
+
 │   ├── calendar_mcp.py     # Google Calendar
+
 │   └── news_mcp.py         # NewsAPI
+
 ├── agent/
+
 │   ├── briefing_agent.py   # Main agent
+
 │   └── prompts.py          # System prompts
+
 ├── config/
+
 │   ├── .env                # Your secrets (never committed)
+
 │   └── api_keys.example.env
+
 ├── requirements.txt
+
 └── README.md
 
 ## Credits
