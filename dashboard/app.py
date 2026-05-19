@@ -75,9 +75,16 @@ Top news:
         briefing_text = response.choices[0].message.content
     except Exception as e:
         error_msg = str(e)
+        from fastapi.responses import JSONResponse
         if "Connection refused" in error_msg:
-            return {"error": "Local model not available. Run 'ollama serve' in your terminal, or switch to 'haiku' in the dropdown."}
-        return {"error": f"Model error: {error_msg}"}
+            return JSONResponse(
+                status_code=200,
+                content={"error": "Ollama not running. Start it with 'ollama serve', or switch to 'haiku' in the dropdown."}
+            )
+        return JSONResponse(
+            status_code=200,
+            content={"error": f"Model error: {error_msg}"}
+        )
 
     last_briefing["text"] = briefing_text
     last_briefing["model"] = model
