@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Briefing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f13; color: #e8e8f0; min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; color: #fff; }
+        .subtitle { color: #888; margin-bottom: 40px; font-size: 14px; }
+        .card { background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .card h2 { font-size: 14px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+        .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        select { background: #0f0f13; border: 1px solid #2a2a3a; color: #e8e8f0; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #6c63ff; color: white; }
+        .btn-telegram { background: #229ED9; color: white; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .section { margin-bottom: 16px; }
+        .section-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .section-value { font-size: 15px; color: #e8e8f0; line-height: 1.6; }
+        .news-item { padding: 6px 0; border-bottom: 1px solid #2a2a3a; font-size: 14px; color: #ccc; }
+        .news-item:last-child { border-bottom: none; }
+        .summary { font-size: 16px; line-height: 1.7; color: #e8e8f0; }
+        .meta { font-size: 12px; color: #555; margin-top: 16px; }
+        .loading { color: #6c63ff; font-size: 14px; display: none; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌅 Morning Briefing</h1>
+        <p class="subtitle">Your daily AI-powered briefing</p>
+
+        <div class="card">
+            <h2>Run Briefing</h2>
+            <div class="controls">
+                <select id="modelSelect">
+                    {% for model in models %}
+                    <option value="{{ model }}">{{ model }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary" onclick="runBriefing(false)">▶ Run Now</button>
+                <button class="btn btn-telegram" onclick="runBriefing(true)">✈ Run + Send to Telegram</button>
+            </div>
+            <p class="loading" id="loading">⏳ Fetching your briefing...</p>
+        </div>
+
+        <div class="card" id="resultsCard" style="display:none">
+            <h2>Latest Briefing</h2>
+            <div class="section">
+                <div class="section-label">🌤 Weather</div>
+                <div class="section-value" id="weatherVal"></div>
+            </div>
+            <div class="section">
+                <div class="section-label">📆 Calendar</div>
+                <div class="section-value" id="calendarVal"></div>
+            </div>
+            <div class="section">
+                <div class="section-label">📰 Top News</div>
+                <div id="newsVal"></div>
+            </div>
+            <div class="section">
+                <div class="section-label">💬 Summary</div>
+                <div class="summary" id="summaryVal"></div>
+            </div>
+            <div class="meta" id="metaVal"></div>
+        </div>
+
+        {% if last_text %}
+        <div class="card">
+            <h2>Last Session</h2>
+            <div class="summary">{{ last_text }}</div>
+            <div class="meta">{{ last_timestamp }} — {{ last_model }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function runBriefing(sendTelegram) {
+            const model = document.getElementById('modelSelect').value;
+            const loading = document.getElementById('loading');
+            const btns = document.querySelectorAll('.btn');
+
+            loading.style.display = 'block';
+            btns.forEach(b => b.disabled = true);
+
+            try {
+                const res = await fetch('/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({model, telegram: sendTelegram})
+                });
+                const data = await res.json();
+
+                document.getElementById('weatherVal').textContent = data.weather;
+                document.getElementById('calendarVal').textContent = data.calendar;
+                document.getElementById('summaryVal').textContent = data.briefing;
+                document.getElementById('metaVal').textContent = data.timestamp + ' — ' + data.model;
+
+                const newsEl = document.getElementById('newsVal');
+                newsEl.innerHTML = data.news.map(n => '<div class="news-item">' + n + '</div>').join('');
+
+                document.getElementById('resultsCard').style.display = 'block';
+            } catch(e) {
+                alert('Error running briefing. Check terminal for details.');
+            } finally {
+                loading.style.display = 'none';
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+    </script>
+</body>
+</html>
