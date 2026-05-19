@@ -68,8 +68,16 @@ Top news:
     if api_base:
         kwargs["api_base"] = api_base
 
-    response = litellm.completion(**kwargs)
-    briefing_text = response.choices[0].message.content
+    # response = litellm.completion(**kwargs)
+    # briefing_text = response.choices[0].message.content
+    try:
+        response = litellm.completion(**kwargs)
+        briefing_text = response.choices[0].message.content
+    except Exception as e:
+        error_msg = str(e)
+        if "Connection refused" in error_msg:
+            return {"error": "Local model not available. Run 'ollama serve' in your terminal, or switch to 'haiku' in the dropdown."}
+        return {"error": f"Model error: {error_msg}"}
 
     last_briefing["text"] = briefing_text
     last_briefing["model"] = model

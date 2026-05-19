@@ -94,7 +94,10 @@
                     body: JSON.stringify({model, telegram: sendTelegram})
                 });
                 const data = await res.json();
-
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
                 document.getElementById('weatherVal').textContent = data.weather;
                 document.getElementById('calendarVal').textContent = data.calendar;
                 document.getElementById('summaryVal').textContent = data.briefing;
